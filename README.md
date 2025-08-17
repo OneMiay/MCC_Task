@@ -4,8 +4,6 @@
 
 ## Инструкция
 
-**Для простомтра решения** 
-Cкачать архв [MCC_Task.zip](https://github.com/OneMiay/MCC_Task/raw/refs/heads/master/Download/MCC_Task.zip)
 
 **Для сборки решения из кода**
 - Открыть файл *MCC_Task.sln* в Visual Studio 2022 и скомпилировать проект.
