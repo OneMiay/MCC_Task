@@ -5,12 +5,12 @@
 ## Инструкция
 
 **Для простомтра решения** 
-Cкачать архв [MCC_Task.zip](https://github.com/OneMiay/MCC_Task/blob/master/Download/MCC_Task.zip)
+Cкачать архв [MCC_Task.zip](https://github.com/OneMiay/MCC_Task/raw/refs/heads/master/Download/MCC_Task.zip)
 
 **Для сборки решения из кода**
 - Открыть файл *MCC_Task.sln* в Visual Studio 2022 и скомпилировать проект.
 - С помощью GCC 
-> gcc MCC_Task.c -o MCC_Task.exe
+    gcc MCC_Task.c -o MCC_Task.exe
 
 ## Дополнительно
 
