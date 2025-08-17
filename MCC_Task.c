@@ -8,43 +8,74 @@
 #define MAX_BINS 16
 
 // Пороговые значения (по умолчанию)
-float threshold_start = 1.6f;
-float threshold_end = 1.5f;
+float threshold_start = 1.6f;   // старт положительного импульса
+float threshold_end = 1.5f;   // окончание положительного импульса
 
-int pulse_count = 0;
-uint16_t bins[MAX_BINS] = { 0 };
-bool inPulse = false;
-float peak = 0.0f;
+// Для отрицательных импульсов возьмем те же величины, но с минусом
+// Например, -1.6 В и -1.5 В
+// Это можно доработать — ввести отдельные переменные, если нужно раздельно настраивать
 
-int NUM_BINS = 16;   // количество диапазонов (по умолчанию 16)
+// Статистика
+int pulse_count_pos = 0;
+int pulse_count_neg = 0;
+uint16_t bins_pos[MAX_BINS] = { 0 };
+uint16_t bins_neg[MAX_BINS] = { 0 };
+
+// Состояния
+bool inPulsePos = false;
+bool inPulseNeg = false;
+
+float peakPos = 0.0f;
+float peakNeg = 0.0f;
+
+int NUM_BINS = 16;    // количество диапазонов (по умолчанию 16)
 int channel_index = 3; // по умолчанию CH3
 
-// Сердце программы. Функция для переноса на микрокотроллер
+// Универсальная функция вычисления бина по амплитуде
+int getBinIndex(float amplitude) {
+    // Большинство микроконтроллеров(например, STM32, AVR, ESP32) 
+    // // имеют опорное напряжение 3.3 В — это максимум, который АЦП может отобразить.
+    int bin = (int)(amplitude / ((3.3f - threshold_start) / NUM_BINS));
+    if (bin < 0) bin = 0;
+    if (bin >= NUM_BINS) bin = NUM_BINS - 1;
+    return bin;
+}
+
+// Сердце программы — обрабатывает и положительные, и отрицательные импульсы
 void processSample(float sample) {
-    if (!inPulse) {
-        // Начало нового импульса
+    // --- Положительный импульс ---
+    if (!inPulsePos) {
         if (sample > threshold_start) {
-            inPulse = true;
-            peak = sample;
+            inPulsePos = true;
+            peakPos = sample;
         }
     }
     else {
-        // Продолжаем накапливать пик
-        if (sample > peak) {
-            peak = sample;
-        }
-        // Конец импульса
+        if (sample > peakPos) peakPos = sample;
         if (sample < threshold_end) {
-            inPulse = false;
-            pulse_count++;
-            // Классификация по амплитуде
-            float amplitude = peak - threshold_start;
-            // Большинство микроконтроллеров(например, STM32, AVR, ESP32) 
-            // имеют опорное напряжение 3.3 В — это максимум, который АЦП может отобразить.
-            int bin = (int)(amplitude / ((3.3f - threshold_start) / NUM_BINS));
-            if (bin < 0) bin = 0;
-            if (bin >= NUM_BINS) bin = NUM_BINS - 1;
-            bins[bin]++;
+            inPulsePos = false;
+            pulse_count_pos++;
+            float amplitude = peakPos - threshold_start;
+            int bin = getBinIndex(amplitude);
+            bins_pos[bin]++;
+        }
+    }
+
+    // --- Отрицательный импульс (инверсный) ---
+    if (!inPulseNeg) {
+        if (sample < -threshold_start) {
+            inPulseNeg = true;
+            peakNeg = sample; // для отрицательного это будет минимум
+        }
+    }
+    else {
+        if (sample < peakNeg) peakNeg = sample;
+        if (sample > -threshold_end) {
+            inPulseNeg = false;
+            pulse_count_neg++;
+            float amplitude = (-threshold_start) - peakNeg; // разница в отрицательной области
+            int bin = getBinIndex(amplitude);
+            bins_neg[bin]++;
         }
     }
 }
@@ -99,7 +130,7 @@ int main(void) {
     }
 
     char line[256];
-    fgets(line, sizeof(line), f);
+    fgets(line, sizeof(line), f); // пропускаем заголовок
 
     while (fgets(line, sizeof(line), f)) {
         float time, ch1, ch2, ch3, ch4, math1;
@@ -120,14 +151,22 @@ int main(void) {
 
     printf("\nФайл: %s\n", filename);
     printf("Канал: CH%d\n", channel_index);
-    printf("Порог начала: %.2f В\n", threshold_start);
-    printf("Порог конца: %.2f В\n", threshold_end);
+    printf("Порог начала (положит.): %.2f В\n", threshold_start);
+    printf("Порог конца   (положит.): %.2f В\n", threshold_end);
     printf("Количество диапазонов: %d\n", NUM_BINS);
-    printf("Общее число импульсов: %d\n", pulse_count);
 
+    printf("\n--- Положительные импульсы ---\n");
+    printf("Общее число: %d\n", pulse_count_pos);
     for (int i = 0; i < NUM_BINS; i++) {
-        printf("Bin %2d: %u\n", i + 1, bins[i]);
+        printf("Bin %2d: %u\n", i + 1, bins_pos[i]);
     }
+
+    printf("\n--- Отрицательные (инверсные) импульсы ---\n");
+    printf("Общее число: %d\n", pulse_count_neg);
+    for (int i = 0; i < NUM_BINS; i++) {
+        printf("Bin %2d: %u\n", i + 1, bins_neg[i]);
+    }
+
     printf("\nНажмите Enter для выхода...");
     getchar();
     getchar();
