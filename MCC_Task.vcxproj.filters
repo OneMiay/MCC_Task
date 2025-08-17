@@ -15,8 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MCC_Task.cpp">
+    <ClCompile Include="MCC_Task.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="lobz0.csv" />
+    <None Include="lobz1.csv" />
+    <None Include="lobz2.csv" />
   </ItemGroup>
 </Project>
