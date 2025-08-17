@@ -23,5 +23,6 @@
     <None Include="lobz0.csv" />
     <None Include="lobz1.csv" />
     <None Include="lobz2.csv" />
+    <None Include="README.md" />
   </ItemGroup>
 </Project>
