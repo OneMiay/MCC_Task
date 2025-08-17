@@ -9,8 +9,10 @@ Cкачать архв [MCC_Task.zip](https://github.com/OneMiay/MCC_Task/raw/re
 
 **Для сборки решения из кода**
 - Открыть файл *MCC_Task.sln* в Visual Studio 2022 и скомпилировать проект.
-- С помощью GCC 
-    gcc MCC_Task.c -o MCC_Task.exe
+- С помощью компилятора GCC: `gcc MCC_Task.c -o MCC_Task.exe`
+
+
+
 
 ## Дополнительно
 
@@ -31,3 +33,4 @@ Cкачать архв [MCC_Task.zip](https://github.com/OneMiay/MCC_Task/raw/re
 
 Email: i.milashin@gmail.com
 Telegram: https://t.me/OMiay
+
