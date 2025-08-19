@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <windows.h>
+#include "labview_bridge.h"
 
 #define MAX_BINS 16
 
@@ -58,6 +59,7 @@ void processSample(float sample) {
             float amplitude = peakPos - threshold_start;
             int bin = getBinIndex(amplitude);
             bins_pos[bin]++;
+            lvb_send_peak(true, amplitude, bin);
         }
     }
 
@@ -76,6 +78,7 @@ void processSample(float sample) {
             float amplitude = (-threshold_start) - peakNeg; // разница в отрицательной области
             int bin = getBinIndex(amplitude);
             bins_neg[bin]++;
+            lvb_send_peak(false, amplitude, bin);
         }
     }
 }
@@ -84,6 +87,7 @@ int main(void) {
     SetConsoleOutputCP(CP_UTF8);
     char filename[32];
     int choice;
+    int lv_enable = 0;
 
     float user_threshold_start = 0.0f, user_threshold_end = 0.0f;
     printf("Введите порог начала импульса (по умолчанию 1.6): ");
@@ -122,6 +126,14 @@ int main(void) {
     printf("Ваш выбор: ");
     scanf("%d", &channel_index);
     if (channel_index < 1 || channel_index > 5) channel_index = 3;
+
+    printf("Включить отправку пиков в LabVIEW (127.0.0.1:6340)? 1 - да, 0 - нет: ");
+    scanf("%d", &lv_enable);
+    if (lv_enable == 1) {
+        if (!lvb_init("127.0.0.1", 6340)) {
+            printf("Предупреждение: не удалось подключиться к LabVIEW (127.0.0.1:6340)\n");
+        }
+    }
 
     FILE* f = fopen(filename, "r");
     if (!f) {
@@ -170,6 +182,8 @@ int main(void) {
     printf("\nНажмите Enter для выхода...");
     getchar();
     getchar();
+
+    lvb_close();
 
     return 0;
 }
